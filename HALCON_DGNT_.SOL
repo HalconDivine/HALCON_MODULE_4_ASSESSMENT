@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract DGNT is ERC20, Ownable {
+    uint256[] internal upliftIds;
+    mapping(uint256 => Uplift) public uplifts;
+
+    struct Uplift { 
+        string upliftName;
+        uint256 amount;
+    }
+
+    constructor(uint256 initialSupply) ERC20("MyDegenToken", "DT") Ownable(msg.sender) {
+        _mint(msg.sender, initialSupply);
+
+        uplifts[1] = Uplift("Scholar Allowance Batch 1", 500);
+        uplifts[2] = Uplift("Scholar Allowance Batch 2", 800);
+        uplifts[3] = Uplift("Scholar Allowance Batch 3", 1000);
+
+        upliftIds.push(1);
+        upliftIds.push(2);
+        upliftIds.push(3);
+    
+    }
+
+    function mintDGNToken(address _to, uint256 _value) external onlyOwner {
+        _mint(_to, _value);
+    }
+
+    function burnDGNToken(uint256 _value) external {
+        _burn(msg.sender, _value);
+    }
+
+    function transferDGNToken(address _recipient, uint256 _amount) external returns (bool) {
+        require(balanceOf(msg.sender) >= _amount, "Insufficient balance");
+        _transfer(msg.sender, _recipient, _amount);
+        return true;
+    }
+
+    function checkDGNTokenBal() external view returns (uint256) {
+        return balanceOf(msg.sender);
+    }
+
+    function redeemUplift(uint256 _upliftId) public {
+        uint256 uplift = uplifts[_upliftId].amount;
+        require(balanceOf(msg.sender) >= uplift, "You have insufficient funds or balance, please try again");
+        _burn(msg.sender, uplift);
+    }
+
+    function showAllUplift() external view returns (Uplift[] memory) {
+        Uplift[] memory allUplifts = new Uplift[](upliftIds.length);
+        for (uint256 i = 0; i < upliftIds.length; i++) {
+            allUplifts[i] = uplifts[upliftIds[i]];
+        }
+        return allUplifts;
+    }
+}
